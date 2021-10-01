@@ -6,15 +6,23 @@ import PhoneIcon from "@material-ui/icons/Phone"
 import React, { useEffect, useRef, useState } from "react"
 import { CopyToClipboard } from "react-copy-to-clipboard"
 import Peer from "simple-peer"
+import {  Paper,Grid,Typography,makeStyles } from '@material-ui/core';
 import io from "socket.io-client"
 import "./VideoChat.css"
+const useStyles = makeStyles((theme) => ({
+	root: {
+	  flexGrow: 1,
+	},
+	paper: {
+	  padding: theme.spacing(2),
+	  textAlign: 'center',
+	  color: theme.palette.text.secondary,
+	},
+  }));
 
 
 const socket = io.connect('http://localhost:5000')
-
-
 export const VideoChat = () => {
-
 	const [ me, setMe ] = useState("")
 	const [ stream, setStream ] = useState()
 	const [ receivingCall, setReceivingCall ] = useState(false)
@@ -94,31 +102,42 @@ export const VideoChat = () => {
 	const leaveCall = () => {
 		setCallEnded(true)
 		connectionRef.current.destroy()
+		window.location.reload();
 	}
+	const classes = useStyles();
 
 	return (
 		<>
-			<h1 style={{ textAlign: "center", color: '#fff' }}>Teams</h1>
+			<h1 style={{ textAlign: "center", color: '#fff' }}>Microsoft Teams</h1>
 		<div className="container">
 			<div className="video-container">
 				<div className="video">
-					{stream &&  <video playsInline muted ref={myVideo} autoPlay style={{ width: "150px" }} />}
-				</div>
+				{stream && (
+						  <Grid item xs={30} md={30}>
+							  <Paper className={classes.paper}>Me</Paper>
+							<video playsInline muted ref={myVideo} autoPlay style={{ width: "300px" }} />
+						  </Grid>
+					)};
+					</div>
 				<div className="video">
+				<Grid item xs={30} md={30}>
+				<Paper className={classes.paper}>{name || "Recipient Name"}</Paper>
 					{callAccepted && !callEnded ?
 					<video playsInline ref={userVideo} autoPlay style={{ width: "300px"}} />:
 					null}
+					</Grid>
 				</div>
 			</div>
 			<div className="myId">
 				<TextField
 					id="filled-basic"
-					label="Name"
+					label="Recipient Name"
 					variant="filled"
 					value={name}
 					onChange={(e) => setName(e.target.value)}
 					style={{ marginBottom: "20px" }}
 				/>
+				{console.log(me)}
 				<CopyToClipboard text={me} style={{ marginBottom: "2rem" }}>
 					<Button variant="contained" color="primary" startIcon={<AssignmentIcon fontSize="large" />}>
 						Copy ID
@@ -135,22 +154,22 @@ export const VideoChat = () => {
 				<div className="call-button">
 					{callAccepted && !callEnded ? (
 						<Button variant="contained" color="secondary" onClick={leaveCall}>
-							End Call
+							Hang Up
 						</Button>
 					) : (
 						<IconButton color="primary" aria-label="call" onClick={() => callUser(idToCall)}>
 							<PhoneIcon fontSize="large" />
+							Call
 						</IconButton>
 					)}
 					{idToCall}
 				</div>
 			</div>
 			<div>
-				{receivingCall && !callAccepted ? (
+			{receivingCall && !callAccepted ? (
 						<div className="caller">
-						<h1 >{name} is calling...</h1>
-						<Button variant="contained" color="primary" onClick={answerCall}>
-							Answer
+						<Button variant="contained" color='secondary' onClick={answerCall}>
+							Answer {name} is calling
 						</Button>
 					</div>
 				) : null}
@@ -158,5 +177,4 @@ export const VideoChat = () => {
 		</div>
 		</>
 	)
-}
-
+            }
